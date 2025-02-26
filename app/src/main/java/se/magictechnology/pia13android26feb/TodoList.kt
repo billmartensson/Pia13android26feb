@@ -21,7 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun TodoList(todoviewmodel : TodoViewModel = viewModel()) {
+fun TodoList(todoviewmodel : TodoViewModel) {
 
     var addtodotitle by remember { mutableStateOf("") }
 
@@ -67,6 +67,11 @@ fun TodoList(todoviewmodel : TodoViewModel = viewModel()) {
             }
         }
 
+        Button(onClick = {
+            todoviewmodel.logout()
+        }) {
+            Text("LOGOUT")
+        }
 
     }
 }
@@ -74,6 +79,6 @@ fun TodoList(todoviewmodel : TodoViewModel = viewModel()) {
 
 @Preview(showBackground = true)
 @Composable
-fun TodoLiostPreview() {
-    TodoList()
+fun TodoListPreview() {
+    TodoList(viewModel())
 }

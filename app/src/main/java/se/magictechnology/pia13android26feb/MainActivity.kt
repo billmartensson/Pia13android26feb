@@ -24,34 +24,19 @@ class MainActivity : ComponentActivity() {
         setContent {
             Pia13android26febTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    TodoList()
+                    TodoStart()
                 }
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Column {
-        Text(
-            text = "Hello $name!",
-            modifier = modifier
-        )
 
-        Button(onClick = {
-            val database = Firebase.database
-            val myRef = database.getReference("message")
-
-            myRef.setValue("Något annat")
-        }) { Text("DO FB") }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     Pia13android26febTheme {
-        TodoList()
+        TodoStart()
     }
 }

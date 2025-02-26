@@ -2,6 +2,7 @@ package se.magictechnology.pia13android26feb
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.getValue
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
@@ -17,19 +18,70 @@ class TodoViewModel : ViewModel() {
 
     val database = Firebase.database.reference
 
+    private val _loggedin = MutableStateFlow(false)
+    val loggedin = _loggedin.asStateFlow()
+
     private val _alltodo = MutableStateFlow(listOf<Todo>())
     val alltodo: StateFlow<List<Todo>> = _alltodo.asStateFlow()
+
+    init {
+        checklogin()
+    }
+
+    fun checklogin() {
+        if(Firebase.auth.currentUser == null) {
+            _loggedin.value = false
+        } else {
+            _loggedin.value = true
+        }
+    }
+
+    fun login(email : String, password : String) {
+        Firebase.auth.signInWithEmailAndPassword(email, password).addOnSuccessListener {
+            checklogin()
+        }.addOnFailureListener {
+            // VISA FEL
+        }
+    }
+
+    fun register(email : String, password : String) {
+        Firebase.auth.createUserWithEmailAndPassword(email, password).addOnSuccessListener {
+            checklogin()
+        }.addOnFailureListener {
+            // VISA FEL
+        }
+    }
+
+    fun logout() {
+        Firebase.auth.signOut()
+        checklogin()
+    }
 
     fun addTodo(todotitle : String) {
         val newtodo = Todo(title = todotitle, done =  false)
 
-        database.child("androidtodo").push().setValue(newtodo)
+        Firebase.auth.currentUser?.let { currentUser ->
+            database
+                .child("androidtodo")
+                .child(currentUser.uid)
+                .push()
+                .setValue(newtodo)
 
-        loadTodo()
+            loadTodo()
+        }
+
     }
 
     fun loadTodo() {
-        database.child("androidtodo").get().addOnSuccessListener { todosnapshot ->
+        var uid = ""
+        Firebase.auth.currentUser?.let {
+            uid = it.uid
+        }
+        if(uid == "") {
+            return
+        }
+
+        database.child("androidtodo").child(uid).get().addOnSuccessListener { todosnapshot ->
 
             var loadedtodo = mutableListOf<Todo>()
             todosnapshot.children.forEach { childsnapshot ->
@@ -69,8 +121,17 @@ class TodoViewModel : ViewModel() {
         }
         done = !done
 
+        var uid = ""
+        Firebase.auth.currentUser?.let {
+            uid = it.uid
+        }
+        if(uid == "") {
+            return
+        }
+
         database
             .child("androidtodo")
+            .child(uid)
             .child(fbid)
             .child("done")
             .setValue(done)
@@ -88,8 +149,17 @@ class TodoViewModel : ViewModel() {
             return
         }
 
+        var uid = ""
+        Firebase.auth.currentUser?.let {
+            uid = it.uid
+        }
+        if(uid == "") {
+            return
+        }
+
         database
             .child("androidtodo")
+            .child(uid)
             .child(fbid)
             .removeValue()
 
